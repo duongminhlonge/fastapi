@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class UserSchema(BaseModel):
@@ -8,3 +8,9 @@ class UserSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserCreateSchema(BaseModel):
+    username: str
+    email: EmailStr
+    password: str

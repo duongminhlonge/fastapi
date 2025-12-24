@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.schemas.user import UserSchema
-from app.services.user_service import get_users, get_user_by_id
+from app.schemas.user import UserSchema, UserCreateSchema
+from app.services.user_service import get_users, get_user_by_id, create_user
 from app.core.database import get_db
 from fastapi import HTTPException
 
@@ -19,3 +19,12 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+# Create a new user
+@router.post("/", response_model=UserSchema, name="create_user")
+def create_user_endpoint(user: UserCreateSchema, db: Session = Depends(get_db)):
+    new_user = create_user(db, user)
+    if not new_user:
+        raise HTTPException(status_code=400, detail="Username or email already exists")
+    return new_user
