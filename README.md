@@ -61,3 +61,22 @@ http://127.0.0.1:8000
 ```bash
 http://127.0.0.1:8000/docs
 ```
+
+## 5. Install Black and Flake8 (Format code PEP8)
+```bash
+# Install Black for auto-formatting
+pip install black
+
+# Install Flake8 for linting
+pip install flake8
+```
+
+- Format code with Black
+```bash
+black .
+```
+
+- Check code style with Flake8
+```bash
+flake8 app/
+```
