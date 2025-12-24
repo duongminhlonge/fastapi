@@ -21,7 +21,7 @@ def create_user(db: Session, user_data):
         return None  # API layer handles HTTPException
 
     new_user = User(
-        username=user_data.username, email=user_data.email, password=hashed_password
+        username=user_data.username, email=user_data.email, password=user_data.password
     )
     db.add(new_user)
     db.commit()
