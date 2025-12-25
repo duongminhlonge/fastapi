@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
 
 
 class UserSchema(BaseModel):
@@ -13,4 +13,4 @@ class UserSchema(BaseModel):
 class UserCreateSchema(BaseModel):
     username: str
     email: EmailStr
-    password: str
+    password: constr(min_length=8, max_length=72)
