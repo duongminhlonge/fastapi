@@ -11,7 +11,9 @@ This guide helps you **set up and run your FastAPI project using Docker**, Postg
 - Make sure your system can resolve `fastapi.local`. Add this to `/etc/hosts` (Linux/macOS) or
   `C:\Windows\System32\drivers\etc\hosts` (Windows):
 
+```bash
 127.0.0.1 fastapi.local
+```
 
 - Ensure ports **80**, **443**, and **8000** are available.
 
@@ -21,14 +23,18 @@ This guide helps you **set up and run your FastAPI project using Docker**, Postg
 
 - Create a `.env` file based on `.env.example`:
 
+```bash
 cp .env.example .env
+```
 
 - Example `.env` contents:
 
+```bash
 DATABASE_URL=postgresql+psycopg2://user:password@db:5432/fastapi
 SECRET_KEY=your_super_secret_key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
 
 - Docker Compose will read this file automatically.
 
@@ -90,7 +96,17 @@ docker ps
 
 ---
 
-## 5. Access the Application
+## 5. Database Migrations
+
+- Run Alembic migrations:
+
+```bash
+docker-compose exec app alembic upgrade head
+```
+
+---
+
+## 6. Access the Application
 
 - Open in browser:
 
@@ -105,22 +121,6 @@ http://fastapi.local/docs
 ```
 
 - FastAPI automatically reloads code changes inside Docker if you mount volumes (see `docker-compose.yml`).
-
----
-
-## 6. Database Migrations
-
-- Run Alembic migrations:
-
-```bash
-docker-compose exec app alembic upgrade head
-```
-
-- Create a new migration:
-
-```bash
-docker-compose exec app alembic revision --autogenerate -m "migration_name"
-```
 
 ---
 

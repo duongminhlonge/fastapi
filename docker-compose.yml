@@ -27,7 +27,7 @@ services:
     volumes:
       - ./app:/app/app
       - ./alembic:/app/alembic
-      - ./.env.example:/app/.env
+      - ./.env:/app/.env
 
   nginx:
     image: nginx:alpine
