@@ -34,15 +34,51 @@ pip freeze > requirements.txt
 ## 3. Sample Project Structure
 ```bash
 fastapi_project/
-├─ venv/
-├─ app/
+├├─ venv/                  # Virtual environment containing Python packages
+├─ app/                   # Main application source code
 │  ├─ __init__.py
-│  ├─ main.py
-│  └─ api/
+│  ├─ main.py             # FastAPI app initialization, include routers, scheduler
+│  ├─ core/               # Config, constants, settings (.env)
+│  │  ├─ __init__.py
+│  │  └─ config.py
+│  ├─ api/                # Routers / endpoints, versioned
+│  │  ├─ __init__.py
+│  │  └─ v1/
+│  │     ├─ __init__.py
+│  │     └─ routes.py     # API endpoints version 1
+│  ├─ models/             # SQLAlchemy or Pydantic models
+│  │  ├─ __init__.py
+│  │  └─ user.py
+│  ├─ schemas/            # Pydantic schemas for request/response validation
+│  │  ├─ __init__.py
+│  │  └─ user.py
+│  ├─ services/           # Business logic / use cases
+│  │  ├─ __init__.py
+│  │  └─ user_service.py
+│  ├─ utils/              # Reusable helper functions
+│  │  ├─ __init__.py
+│  │  └─ email_utils.py
+│  ├─ jobs/               # Cronjobs or scheduled tasks
+│  │  ├─ __init__.py
+│  │  └─ email_job.py
+│  ├─ db/                 # Database connection, session, migration helpers
+│  │  ├─ __init__.py
+│  │  └─ base.py
+│  └─ dependencies/       # Dependencies for FastAPI Depends()
 │     ├─ __init__.py
-│     └─ v1/
-│        ├─ __init__.py
-│        └─ routes.py
+│     └─ auth.py          # Example: get_current_user, verify_token, etc.
+├─ alembic/               # Alembic migration scripts (parallel to app/)
+│  ├─ versions/           # Individual migration files
+│  ├─ env.py              # Alembic environment configuration
+│  └─ script.py.mako      # Alembic template
+├─ alembic.ini            # Alembic main configuration
+├─ scripts/               # CLI scripts or cronjob scripts
+│  └─ run_email_cron.py
+├─ tests/                 # Unit/integration tests
+│  ├─ __init__.py
+│  └─ test_email.py
+├─ requirements.txt       # Project dependencies
+└─ README.md
 ```
 ## 4. Run the FastAPI App
 - Navigate to the project root directory (fastapi_project/):

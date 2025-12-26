@@ -8,7 +8,7 @@ from app.services.user_service import (
     create_user,
     authenticate_user,
 )
-from app.core.database import get_db
+from app.db.base import get_db
 from fastapi.security import OAuth2PasswordRequestForm
 from app.schemas.user import TokenSchema
 from app.core.security import create_access_token
