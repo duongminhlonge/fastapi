@@ -1,118 +1,229 @@
-FastAPI Project
+# FastAPI Project (Docker Setup)
 
-This guide will help you **set up a virtual environment**, install dependencies, and run your FastAPI app using Uvicorn.
+This guide helps you **set up and run your FastAPI project using Docker**, PostgreSQL, and Nginx with a virtual host
+`fastapi.local`.
 
 ---
 
-## 1. Prepare the environment
+## 1. Prerequisites
 
-### 1.1. Create a virtual environment (if not already created)
+- Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
+- Make sure your system can resolve `fastapi.local`. Add this to `/etc/hosts` (Linux/macOS) or
+  `C:\Windows\System32\drivers\etc\hosts` (Windows):
+
+127.0.0.1 fastapi.local
+
+- Ensure ports **80**, **443**, and **8000** are available.
+
+---
+
+## 2. Environment Variables
+
+- Create a `.env` file based on `.env.example`:
+
+cp .env.example .env
+
+- Example `.env` contents:
+
+DATABASE_URL=postgresql+psycopg2://user:password@db:5432/fastapi
+SECRET_KEY=your_super_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+- Docker Compose will read this file automatically.
+
+---
+
+## 3. Docker Project Structure
+
 ```bash
-# Create a virtual environment named "venv"
-python -m venv venv
+fastapi_project/
+├─ app/                   # FastAPI source code
+│  ├─ main.py             # FastAPI app init, routers, etc.
+│  ├─ core/               # Config and constants
+│  ├─ api/                # Versioned API routers
+│  ├─ models/             # SQLAlchemy ORM models
+│  ├─ schemas/            # Pydantic schemas
+│  ├─ services/           # Business logic
+│  ├─ utils/              # Helper functions
+│  ├─ jobs/               # Scheduled tasks / cronjobs
+│  ├─ db/                 # Database connection & Base
+│  └─ dependencies/       # FastAPI Depends() utilities
+├─ alembic/               # Database migration scripts
+├─ nginx/                 # Nginx config files
+│  └─ nginx.conf
+├─ docker-compose.yml     # Docker Compose setup
+├─ Dockerfile             # Docker image for FastAPI
+├─ .env.example           # Template for environment variables
+├─ scripts/               # CLI scripts / cronjob scripts
+├─ tests/                 # Unit/integration tests
+└─ README.md
+
 ```
 
-### 1.2. Activate the virtual environment
+---
+
+## 4. Build and Start the Project with Docker
+
+1. Build the Docker images:
+
 ```bash
-source venv/bin/activate
+docker-compose build
 ```
 
-## 2. Install dependencies
+2. Start all services (FastAPI, PostgreSQL, Nginx):
+
 ```bash
-pip install fastapi uvicorn
-```
-- If you have a requirements.txt file:
-```bash
-pip install -r requirements.txt
+docker-compose up -d
 ```
 
-- After installing all required packages (e.g., FastAPI, Uvicorn, Black), save them to `requirements.txt` so others can install the same dependencies:
+- This will start 3 containers:
+    - fastapi_db → PostgreSQL
+    - fastapi_app → FastAPI
+    - fastapi_nginx → Nginx serving virtual host `fastapi.local`
+
+3. Check running containers:
+
+```bash
+docker ps
+```
+
+---
+
+## 5. Access the Application
+
+- Open in browser:
+
+```bash
+http://fastapi.local
+```
+
+- Swagger API docs:
+
+```bash
+http://fastapi.local/docs
+```
+
+- FastAPI automatically reloads code changes inside Docker if you mount volumes (see `docker-compose.yml`).
+
+---
+
+## 6. Database Migrations
+
+- Run Alembic migrations:
+
+```bash
+docker-compose exec app alembic upgrade head
+```
+
+- Create a new migration:
+
+```bash
+docker-compose exec app alembic revision --autogenerate -m "migration_name"
+```
+
+---
+
+## 7. Logs and Debugging
+
+- View container logs:
+
+```bash
+docker-compose logs -f app
+docker-compose logs -f nginx
+docker-compose logs -f db
+```
+
+- Enter FastAPI container shell:
+
+```bash
+docker-compose exec app /bin/sh
+```
+
+- Check Docker network:
+
+```bash
+docker network ls
+docker network inspect fastapi_project_default
+```
+
+---
+
+## 8. Stop the Project
+
+```bash
+docker-compose down
+```
+
+- Remove containers but keep database volume:
+
+```bash
+docker-compose down -v  # WARNING: deletes database data
+```
+
+---
+
+## 9. Formatting and Linting (Optional, for dev)
+
+- Install Black and Flake8 inside your local Python environment (not needed in Docker):
+
+```bash
+pip install black flake8
+```
+
+- Format code:
+
+```bash
+black app/
+```
+
+- Lint code:
+
+```bash
+flake8 app/
+```
+
+---
+
+## 10. Python Dependencies and requirements.txt
+
+If you want to run FastAPI locally (not strictly needed in Docker), install the required packages:
+
+```bash
+pip install fastapi uvicorn[standard] sqlalchemy psycopg2-binary pydantic python-dotenv alembic python-jose[cryptography] passlib[bcrypt]
+```
+
+- fastapi → main framework
+
+- uvicorn[standard] → ASGI server for running FastAPI
+
+- sqlalchemy → ORM for database models
+
+- psycopg2-binary → PostgreSQL driver
+
+- pydantic → data validation / schemas
+
+- python-dotenv → load .env files
+
+- alembic → database migrations
+
+- python-jose[cryptography] → JWT token creation / verification
+
+- passlib[bcrypt] → password hashing
+
+After installing all packages, freeze them into requirements.txt:
+
 ```bash
 pip freeze > requirements.txt
 ```
 
-## 3. Sample Project Structure
+Anyone can now install the exact versions:
+
 ```bash
-fastapi_project/
-├├─ venv/                  # Virtual environment containing Python packages
-├─ app/                   # Main application source code
-│  ├─ __init__.py
-│  ├─ main.py             # FastAPI app initialization, include routers, scheduler
-│  ├─ core/               # Config, constants, settings (.env)
-│  │  ├─ __init__.py
-│  │  └─ config.py
-│  ├─ api/                # Routers / endpoints, versioned
-│  │  ├─ __init__.py
-│  │  └─ v1/
-│  │     ├─ __init__.py
-│  │     └─ routes.py     # API endpoints version 1
-│  ├─ models/             # SQLAlchemy ORM models
-│  │  ├─ __init__.py
-│  │  └─ user.py
-│  ├─ schemas/            # Pydantic schemas for request/response validation
-│  │  ├─ __init__.py
-│  │  └─ user.py
-│  ├─ services/           # Business logic / use cases
-│  │  ├─ __init__.py
-│  │  └─ user_service.py
-│  ├─ utils/              # Reusable helper functions
-│  │  ├─ __init__.py
-│  │  └─ email_utils.py
-│  ├─ jobs/               # Cronjobs or scheduled tasks
-│  │  ├─ __init__.py
-│  │  └─ email_job.py
-│  ├─ db/                 # Database connection, session, migration helpers
-│  │  ├─ __init__.py
-│  │  └─ base.py
-│  └─ dependencies/       # Dependencies for FastAPI Depends()
-│     ├─ __init__.py
-│     └─ auth.py          # Example: get_current_user, verify_token, etc.
-├─ alembic/               # Alembic migration scripts (parallel to app/)
-│  ├─ versions/           # Individual migration files
-│  ├─ env.py              # Alembic environment configuration
-│  └─ script.py.mako      # Alembic template
-├─ alembic.ini            # Alembic main configuration
-├─ scripts/               # CLI scripts or cronjob scripts
-│  └─ run_email_cron.py
-├─ tests/                 # Unit/integration tests
-│  ├─ __init__.py
-│  └─ test_email.py
-├─ requirements.txt       # Project dependencies
-└─ README.md
-```
-## 4. Run the FastAPI App
-- Navigate to the project root directory (fastapi_project/):
-```bash
-cd /path/to/fastapi_project
-```
-- Run Uvicorn:
-```bash
-uvicorn app.main:app --reload
-```
-- Open in browser:
-```bash
-http://127.0.0.1:8000
-```
-- Swagger API docs:
-```bash
-http://127.0.0.1:8000/docs
+pip install -r requirements.txt
+
 ```
 
-## 5. Install Black and Flake8 (Format code PEP8)
-```bash
-# Install Black for auto-formatting
-pip install black
-
-# Install Flake8 for linting
-pip install flake8
-```
-
-- Format code with Black
-```bash
-black .
-```
-
-- Check code style with Flake8
-```bash
-flake8 app/
-```
+---
+✅ This setup ensures your FastAPI project runs **fully in Docker**, with PostgreSQL, Nginx virtual host (
+`fastapi.local`), and automatic environment configuration.
