@@ -185,7 +185,19 @@ flake8 app/
 
 ---
 
-## 10. Python Dependencies and requirements.txt
+## 10. Run Unit Tests in Docker
+
+Run tests in the app container:
+
+```bash
+docker exec -it fastapi_app bash
+# now you are inside the container
+pytest tests/ --disable-warnings -v
+```
+
+---
+
+## 11. Python Dependencies and requirements.txt
 
 If you want to run FastAPI locally (not strictly needed in Docker), install the required packages:
 
