@@ -46,7 +46,7 @@ fastapi_project/
 │  │  └─ v1/
 │  │     ├─ __init__.py
 │  │     └─ routes.py     # API endpoints version 1
-│  ├─ models/             # SQLAlchemy or Pydantic models
+│  ├─ models/             # SQLAlchemy ORM models
 │  │  ├─ __init__.py
 │  │  └─ user.py
 │  ├─ schemas/            # Pydantic schemas for request/response validation
